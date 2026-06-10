@@ -5,15 +5,8 @@ import queue
 import pyautogui
 import pyperclip
 import keyboard
-import pygame
 
-pygame.mixer.init()
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SOUNDS_DIR = os.path.join(BASE_DIR, "sounds")
-SUCCESS_SOUND = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "copy_successfully.wav"))
-FAIL_SOUND = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "copy_failed.wav"))
-
+from ui.sound_confirmation import play_sound, SUCCESS_SOUND, FAIL_SOUND
 from core.installer import install_and_import
 from core.config_manager import get_config
 from core.excel_helper import paste_to_excel
@@ -21,17 +14,6 @@ from ui.ui_widget import LastCopiedWidget
 
 install_and_import(["pyautogui", "pyperclip", "pywin32", "keyboard", "tk", "screeninfo"])
 
-# ----------------- SOUND FUNCTION -----------------
-def play_sound(sound):
-    import ui.ui_widget as ui_widget
-    if ui_widget.MUTED:
-        return
-    try:
-        sound.stop()
-        sound.play()
-    except Exception as e:
-        print(f"Error playing sound: {e}")
-# --------------------------------------------------
 
 def main():
     wb_name = input("Excel workbook name (e.g. book.xlsx): ").strip()
