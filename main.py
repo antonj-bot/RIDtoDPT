@@ -5,14 +5,12 @@ import queue
 import pyautogui
 import pyperclip
 import keyboard
+from playwright.sync_api import sync_playwright
 
 from ui.sound_confirmation import play_sound, SUCCESS_SOUND, FAIL_SOUND
-from core.installer import install_and_import
 from core.config_manager import get_config
 from core.excel_helper import paste_to_excel
 from ui.ui_widget import LastCopiedWidget
-
-install_and_import(["pyautogui", "pyperclip", "pywin32", "keyboard", "tk", "screeninfo"])
 
 
 def main():
@@ -25,7 +23,6 @@ def main():
     print(f"AutoExtracted='{left_cell}', Manual='{right_cell}'")
 
     config = get_config()
-    click_pos = config["click_pos"]
     key_left = config["hotkey_left"]
     key_right = config["hotkey_right"]
 
@@ -48,44 +45,52 @@ def main():
 
     threading.Thread(target=excel_worker, daemon=True).start()
 
-    def key_loop():
-        while True:
-            if keyboard.is_pressed("esc"):
-                os._exit(0)
 
-            # LEFT hotkey
-            if keyboard.is_pressed(key_left):
-                pyautogui.moveTo(*click_pos)
-                pyautogui.click(clicks=2)
-                pyautogui.hotkey("ctrl", "c")
-                clip = pyperclip.paste().strip()
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
 
-                if clip and clip not in ("[", "]", "{", "}"):
-                    threading.Thread(target=play_sound, args=(SUCCESS_SOUND,), daemon=True).start()
-                    task_queue.put((wb_name, sheet_name, left_cell, clip))
-                else:
-                    threading.Thread(target=play_sound, args=(FAIL_SOUND,), daemon=True).start()
+        page.goto(config["live_site"])
+        
+        def key_loop():
+            while True:
+                if keyboard.is_pressed("esc"):
+                    os._exit(0)
 
-                while keyboard.is_pressed(key_left):
-                    time.sleep(0.01)
+                # LEFT hotkey
+                if keyboard.is_pressed(key_left):
+                    RID = page.inner_text(config["RID_selector"])
+                    print("Extracted RID:", RID)
+                    
+                    clip = RID.strip()
 
-            # RIGHT hotkey
-            if keyboard.is_pressed(key_right):
-                pyautogui.moveTo(*click_pos)
-                pyautogui.click(clicks=2)
-                pyautogui.hotkey("ctrl", "c")
-                clip = pyperclip.paste().strip()
+                    if clip and clip not in ("[", "]", "{", "}"):
+                        threading.Thread(target=play_sound, args=(SUCCESS_SOUND,), daemon=True).start()
+                        task_queue.put((wb_name, sheet_name, left_cell, clip))
+                    else:
+                        threading.Thread(target=play_sound, args=(FAIL_SOUND,), daemon=True).start()
 
-                if clip and clip not in ("[", "]", "{", "}"):
-                    threading.Thread(target=play_sound, args=(SUCCESS_SOUND,), daemon=True).start()
-                    task_queue.put((wb_name, sheet_name, right_cell, clip))
-                else:
-                    threading.Thread(target=play_sound, args=(FAIL_SOUND,), daemon=True).start()
+                    while keyboard.is_pressed(key_left):
+                        time.sleep(0.01)
 
-                while keyboard.is_pressed(key_right):
-                    time.sleep(0.01)
+                # RIGHT hotkey
+                if keyboard.is_pressed(key_right):
+                    RID = page.inner_text(config["RID_selector"])
+                    print("Extracted RID:", RID)
+                    clip = RID.strip()
 
-            time.sleep(0.01)
+                    if clip and clip not in ("[", "]", "{", "}"):
+                        threading.Thread(target=play_sound, args=(SUCCESS_SOUND,), daemon=True).start()
+                        task_queue.put((wb_name, sheet_name, right_cell, clip))
+                    else:
+                        threading.Thread(target=play_sound, args=(FAIL_SOUND,), daemon=True).start()
+
+                    while keyboard.is_pressed(key_right):
+                        time.sleep(0.01)
+
+                time.sleep(0.01)
+                
 
     threading.Thread(target=key_loop, daemon=True).start()
     widget.start()
