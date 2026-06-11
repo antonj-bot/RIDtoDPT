@@ -1,0 +1,6 @@
+keyboard==0.13.5
+pyautogui==0.9.54
+pygame==2.6.1
+pyperclip==1.9.0
+pywin32==310
+screeninfo==0.8.1
