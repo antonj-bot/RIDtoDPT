@@ -34,12 +34,12 @@ How to Use:
 
 3. App will ask for one time setup of chosen Monitor, Screen Coordinates and Hotkeys.
    
-3. Use your chosen or default hotkeys:
+4. Use your chosen or default hotkeys:
    - Left hotkey → copies to row C10 in excel, app can detect if cell has value and will move to next cell
    - Right hotkey → copies to row I10 in excel, app can detect if cell has value and will move to next cell
      
-4.Minimize console and start keying
+5. Minimize console and start keying
 
-4.Once done using app, press ESC to exit.
+6. Once done using app, press ESC to exit.
 
 
