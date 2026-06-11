@@ -1,45 +1,32 @@
-A Python tool that automates copying text from anywhere on screen and pasting it into specific Excel cells using keyboard shortcuts.
+# RID to DPT Automation Tool
 
-Features:
+Small Python tool for extracting a Report ID from the live site and writing it directly into an open Excel workbook.
 
- Hotkey-based copy and paste
-- Automatically pastes into Excel (predefined cells)
-- Sound feedback (success / failure)
-- On-screen widget showing last copied value
-- Configurable hotkeys and click position
+This version does not use clipboard copy/paste. It gets the Report ID directly from the page using a CSS selector.
 
-Requirements:
+## What it does
 
-- Python 3.8+
-- Windows OS (required for `pywin32` and keyboard hooks)
+- Opens the configured live site with Playwright
+- Finds the Report ID using a CSS selector
+- Scans open tabs and popups
+- Checks iframes when looking for the Report ID
+- Removes `Report Id:` from the extracted text
+- Writes the cleaned RID into Excel
+- Plays a success or fail sound
+- Shows the last extracted RID in a small widget
+- Closes the app when the browser is closed
 
+## Requirements
 
-Installation:
+- Windows
+- Python 3.10 or newer
+- Microsoft Excel
+- Open Excel workbook before running the app
+- Playwright browser installed
 
-1. Clone or download this project
+## Install
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
+Install the required Python packages:
 
-
-How to Use:
-
-1. Run the app:
-   python main.py
-
-2. Enter:
-   - Excel workbook name
-   - Sheet name
-
-3. App will ask for one time setup of chosen Monitor, Screen Coordinates and Hotkeys.
-   
-4. Use your chosen or default hotkeys:
-   - Left hotkey → copies to row C10 in excel, app can detect if cell has value and will move to next cell
-   - Right hotkey → copies to row I10 in excel, app can detect if cell has value and will move to next cell
-     
-5. Minimize console and start keying
-
-6. Once done using app, press ESC to exit.
-
-
+```bash
+pip install -r requirements.txt
