@@ -23,7 +23,7 @@ Installation:
    pip install -r requirements.txt
 
 
-▶️ How to Use
+How to Use:
 
 1. Run the app:
    python main.py
