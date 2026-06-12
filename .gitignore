@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+*.exe
+*.spec
+
+# Local config
+config.json
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
+
+# Logs
+*.log
