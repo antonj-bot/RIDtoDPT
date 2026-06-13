@@ -140,19 +140,13 @@ def main():
         """
         with sync_playwright() as p:
             browser = p.chromium.launch(
-                channel="chrome",
                 headless=False,
                 args=[
-                    "--start-maximized",
-                    "--disable-blink-features=AutomationControlled"
+                    f"--window-size={browser_width},{browser_height}",
+                    "--window-position=0,0"
                 ]
             )
 
-            context = browser.new_context(
-                viewport=None
-            )
-            
-            
             # Match Playwright viewport to actual browser window size.
             context = browser.new_context(
                 viewport={
@@ -168,7 +162,7 @@ def main():
             active_page = context.new_page()
             registered_pages = set()
 
-            '''def maximize_window(pg):
+            def maximize_window(pg):
                 """
                 Force browser window bounds to match screen size.
                 This avoids mismatch between Chrome window and Playwright viewport.
@@ -192,7 +186,7 @@ def main():
 
                     print("Browser window resized to desktop size.")
                 except Exception as e:
-                    print("Resize warning:", e)'''
+                    print("Resize warning:", e)
 
             def get_alive_pages():
                 alive_pages = []
@@ -229,20 +223,25 @@ def main():
                     return
 
                 registered_pages.add(pg)
-                
-                def handle_dialog(dialog):
-                    try:
-                        print("Dialog detected:", dialog.type, dialog.message)
 
-                        if dialog.type in ("alert", "confirm"):
-                            dialog.accept()
-                        elif dialog.type == "prompt":
-                            dialog.accept("")
-                        else:
-                            dialog.dismiss()
+                def handle_dialog(dialog):
+                    """
+                    Let the website/browser's original dialog appear.
+
+                    IMPORTANT:
+                    We do not call dialog.accept() or dialog.dismiss() here,
+                    because you want the user to click the original OK/Cancel popup.
+                    """
+                    try:
+                        print("Browser dialog appeared:", dialog.type, dialog.message)
+
+                        # Do not show Tkinter popup here.
+                        # Do not call dialog.accept().
+                        # Do not call dialog.dismiss().
+                        # Let the user interact with the original site popup.
 
                     except Exception as e:
-                        print("Dialog handling warning:", e)
+                        print("Dialog notice warning:", e)
 
                 try:
                     pg.on("popup", handle_popup)
@@ -255,10 +254,6 @@ def main():
                     print("Registered page:", pg.url)
                 except Exception:
                     print("Registered page: unknown URL")
-                
-                
-                
-                
 
             def handle_page_close(closed_page):
                 nonlocal active_page
@@ -290,19 +285,18 @@ def main():
 
                 active_page = popup_page
                 register_page(popup_page)
-                
+
                 try:
                     popup_page.bring_to_front()
                 except Exception as e:
-                    print("Bring to front warning:", e)
-
+                    print("Bring popup to front warning:", e)
 
                 try:
                     popup_page.wait_for_load_state("domcontentloaded", timeout=5000)
                 except Exception as e:
                     print("Popup load warning:", e)
 
-                '''maximize_window(popup_page)'''
+                maximize_window(popup_page)
 
                 try:
                     print("Active page changed to popup:", popup_page.url)
@@ -318,11 +312,16 @@ def main():
                 register_page(new_page)
 
                 try:
+                    new_page.bring_to_front()
+                except Exception as e:
+                    print("Bring new page to front warning:", e)
+
+                try:
                     new_page.wait_for_load_state("domcontentloaded", timeout=5000)
                 except Exception as e:
                     print("New page load warning:", e)
 
-                '''maximize_window(new_page)'''
+                maximize_window(new_page)
 
                 try:
                     print("Active page changed to:", new_page.url)
@@ -417,12 +416,12 @@ def main():
             register_page(active_page)
 
             # Resize before loading site
-            '''maximize_window(active_page)'''
+            maximize_window(active_page)
 
             active_page.goto(config["live_site"], wait_until="domcontentloaded")
 
             # Resize again after loading site
-            '''maximize_window(active_page)'''
+            maximize_window(active_page)
 
             print("Browser is running...")
             print("Initial page:", active_page.url)
@@ -447,7 +446,7 @@ def main():
                             print("Fallback detected page:", pg.url)
                             active_page = pg
                             register_page(pg)
-                            '''maximize_window(pg)'''
+                            maximize_window(pg)
 
                     if keyboard.is_pressed(key_left):
                         process_hotkey(left_cell, "LEFT")
