@@ -1,18 +1,27 @@
-# Security Policy
+Security Policy
 
-## Data Handling
-- No data is transmitted externally
-- No keystrokes are logged or stored
-- Clipboard data is not persisted
+Data Handling
+- No extracted data is transmitted externally.
+- No keystrokes are logged, stored, or transmitted.
+- Hotkeys are used only to trigger local actions.
+- The application does not use the system clipboard for Excel writes.
+- Extracted data is held temporarily in memory and written directly to the configured Excel workbook.
 
-## Execution
-- Runs locally only
-- No background monitoring
-- No system-wide hooks
+Execution
+- Runs locally only.
+- Does not operate as a hidden background service.
+- Hotkey detection occurs only while the application is actively running.
+- No runtime installation of dependencies.
 
-## Dependencies
-- All dependencies are pinned and reviewed
-- No runtime installation
+Keyboard / Hotkey Handling
+- Uses configured hotkeys for user-triggered extraction.
+- Does not record typed text.
+- Does not save keypress history.
+- Does not transmit keyboard input.
 
-## Reporting Issues
+Dependencies
+- All dependencies are pinned and reviewed.
+- Dependencies are installed only during setup.
+
+Reporting Issues
 Contact: antonjeruta@gmail.com
