@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 # -------------------- CONFIG --------------------
-WIDGET_WIDTH = 200
-WIDGET_HEIGHT = 70
+WIDGET_WIDTH = 180
+WIDGET_HEIGHT = 80
 
 # Hotkeys ON theme
 GRADIENT_ON_TOP = "#4b6cb7"
@@ -62,7 +62,7 @@ class LastCopiedWidget:
         # Draw text directly on canvas
         self.text_id = self.canvas.create_text(
             self.width // 2,
-            self.height // 2,
+            self.height // 1.5,
             text="Last pasted:\n(none)",
             font=(FONT_NAME, FONT_SIZE, "bold"),
             fill=TEXT_COLOR,
