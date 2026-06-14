@@ -29,7 +29,13 @@ def main():
 
     config = get_config()
 
-    widget = LastCopiedWidget()
+    # Hotkeys are OFF by default.
+    # The event starts cleared.
+    hotkeys_enabled_event = threading.Event()
+
+    widget = LastCopiedWidget(
+        hotkeys_enabled_event=hotkeys_enabled_event
+    )
 
     # Get screen size from Tkinter main thread.
     screen_width = widget.root.winfo_screenwidth()
@@ -109,7 +115,8 @@ def main():
         browser_width=browser_width,
         browser_height=browser_height,
         task_queue=task_queue,
-        ui_queue=ui_queue
+        ui_queue=ui_queue,
+        hotkeys_enabled_event=hotkeys_enabled_event
     )
 
     # Start Excel worker

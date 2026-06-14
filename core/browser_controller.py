@@ -5,10 +5,7 @@ import keyboard
 from playwright.sync_api import sync_playwright
 
 from core.text_utils import clean_rid_text
-
 from ui.sound_confirmation import play_sound, SUCCESS_SOUND, FAIL_SOUND
-
-
 
 
 class BrowserController:
@@ -22,7 +19,8 @@ class BrowserController:
         browser_width,
         browser_height,
         task_queue,
-        ui_queue
+        ui_queue,
+        hotkeys_enabled_event=None
     ):
         self.config = config
         self.wb_name = wb_name
@@ -33,6 +31,7 @@ class BrowserController:
         self.browser_height = browser_height
         self.task_queue = task_queue
         self.ui_queue = ui_queue
+        self.hotkeys_enabled_event = hotkeys_enabled_event
 
         self.browser = None
         self.context = None
@@ -59,6 +58,16 @@ class BrowserController:
         """
         print(reason)
         self.ui_queue.put(("shutdown", reason))
+
+    def hotkeys_are_enabled(self):
+        """
+        Returns True only when the widget toggle has enabled hotkeys.
+        Hotkeys are OFF by default because the event starts cleared.
+        """
+        return (
+            self.hotkeys_enabled_event is not None
+            and self.hotkeys_enabled_event.is_set()
+        )
 
     def maximize_window(self, page):
         """
@@ -272,6 +281,16 @@ class BrowserController:
         raise Exception(f"Selector not found in any open tab/page: {selector}")
 
     def process_hotkey(self, target_cell, side_name):
+        """
+        Extracts the Report ID and queues it for Excel paste.
+
+        Important:
+        If hotkeys are OFF, this returns immediately.
+        That means no extraction, no Excel paste, and no sounds.
+        """
+        if not self.hotkeys_are_enabled():
+            return
+
         try:
             selector = self.config["RID_selector"]
 
@@ -332,17 +351,20 @@ class BrowserController:
                         self.register_page(page)
                         self.maximize_window(page)
 
-                if keyboard.is_pressed(key_left):
-                    self.process_hotkey(self.left_cell, "LEFT")
+                # Hotkeys are ignored completely when OFF.
+                # This prevents extraction, Excel paste, success sound, and fail sound.
+                if self.hotkeys_are_enabled():
+                    if keyboard.is_pressed(key_left):
+                        self.process_hotkey(self.left_cell, "LEFT")
 
-                    while keyboard.is_pressed(key_left):
-                        self.playwright_pause(10)
+                        while keyboard.is_pressed(key_left):
+                            self.playwright_pause(10)
 
-                if keyboard.is_pressed(key_right):
-                    self.process_hotkey(self.right_cell, "RIGHT")
+                    if keyboard.is_pressed(key_right):
+                        self.process_hotkey(self.right_cell, "RIGHT")
 
-                    while keyboard.is_pressed(key_right):
-                        self.playwright_pause(10)
+                        while keyboard.is_pressed(key_right):
+                            self.playwright_pause(10)
 
                 self.playwright_pause(50)
 
@@ -364,7 +386,6 @@ class BrowserController:
     def start(self):
         """
         Main Playwright entry point.
-        This replaces your old playwright_loop() function.
         """
         with sync_playwright() as p:
             self.browser = p.chromium.launch(
